@@ -1,0 +1,9 @@
+IndentWidth: 4
+
+BasedOnStyle: llvm
+
+AlignAfterOpenBracket: BlockIndent
+
+AccessModifierOffset: -4
+
+AlignArrayOfStructures: Right 
