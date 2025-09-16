@@ -11,17 +11,18 @@ void processInput(GLFWwindow *window);
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HIGHT = 800;
 
-const char *vertexShaderSrc = "#version 330 core\n"
+const char *vertexShaderSrc =
+    "#version 330 core\n"
     "layout (location=0) in vec3 aPos;\n"
     "void main(){\n"
     "   gl_Position = vec4(aPos.x,aPos.y,aPos.z,1.0);\n"
     "}\0";
 
 const char *fragmentShaderSrc = "#version 330 core\n"
-    "out vec4 FragCol;\n"
-    "void main(){\n"
-    "   FragCol = vec4(1.0f,0.5f,0.2f,1.0f);\n"
-    "}\0";
+                                "out vec4 FragCol;\n"
+                                "void main(){\n"
+                                "   FragCol = vec4(1.0f,0.5f,0.2f,1.0f);\n"
+                                "}\0";
 
 struct Colors {
     float ONE[4] = {1.0f, 0.0f, 0.0f};
@@ -31,11 +32,10 @@ struct Colors {
     int idx = 0;
 } col;
 
-float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-};
+float vertices[] = {0.5f,  0.5f,  0.0f, 0.5f,  -0.5f, 0.0f,
+                    -0.5f, -0.5f, 0.0f, -0.5f, 0.5f,  0.0f};
+
+unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
 int main() {
 
@@ -44,11 +44,12 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    #ifdef __APPLE__
+#ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
+#endif
 
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HIGHT, "gl ground", NULL, NULL);
+    GLFWwindow *window =
+        glfwCreateWindow(SCREEN_WIDTH, SCREEN_HIGHT, "gl ground", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "Failed to open Window\n";
@@ -68,7 +69,7 @@ int main() {
 
     // vertex shader
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1 , &vertexShaderSrc,NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
     glCompileShader(vertexShader);
 
     // vertex shader log
@@ -76,9 +77,10 @@ int main() {
     char infoLog[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 
-    if(!success){
-        glGetShaderInfoLog(vertexShader,512,NULL,infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // fragment shader
@@ -89,9 +91,10 @@ int main() {
     // fragment shader log
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 
-    if(!success){
-        glGetShaderInfoLog(fragmentShader,512,NULL,infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    if (!success) {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // link shaders
@@ -102,31 +105,40 @@ int main() {
 
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 
-    if(!success){
-        glGetProgramInfoLog(shaderProgram,512,NULL,infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // delete shaders
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER,VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),vertices,GL_STATIC_DRAW);
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
 
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW
+    );
+
+    glVertexAttribPointer(
+        0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0
+    );
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
-
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -135,14 +147,16 @@ int main() {
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0,3);
+        // glDrawArrays(GL_TRIANGLES,0,3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1,&VAO);
-    glDeleteBuffers(1,&VBO);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
 
     glfwTerminate();
@@ -158,7 +172,10 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-        glClearColor(col.ONE[col.idx], col.TWO[col.idx], col.THREE[col.idx], col.FOUR[col.idx]);
+        glClearColor(
+            col.ONE[col.idx], col.TWO[col.idx], col.THREE[col.idx],
+            col.FOUR[col.idx]
+        );
         col.idx = (col.idx + 1) % 4;
     }
 }
